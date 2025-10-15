@@ -45,7 +45,10 @@ def main():
         # fill the screen with a color to wipe away anything from last frame
         screen.fill((0, 0, 0))
 
-        universe.draw(screen)
+        hovered_star = universe.draw(screen)
+
+        if hovered_star and input_manager.mouse_buttons[0] == MouseButtonState.PRESSED:
+            print(f"Clicked on star: {hovered_star.name} (ID: {hovered_star.id}) in constellations: {', '.join(hovered_star.constellations)}")
 
         # flip() the display to put your work on screen
         pygame.display.flip()

@@ -67,6 +67,8 @@ class Universe():
         delta_x = (self.x) * self.scale
         delta_y = (- self.y) * self.scale
 
+        hovered_node = None
+
         for [id, vertex] in self.graph.vertex_list.items():
             current_star: star.Star = vertex.value
 
@@ -74,19 +76,19 @@ class Universe():
                 star_coords = ( (current_star.coordinates.x + delta_x) * self.scale , (current_star.coordinates.y + delta_y) * self.scale )
                 star_radius = max(1, int(current_star.radius * 10 * self.scale))
 
+                pygame.draw.circle(screen, star.get_constellation_color(current_star), star_coords, star_radius)
+
                 for [neighbor_id, distance] in vertex.get_connections().items():
                     neighbor_vertex = self.graph.get_vertex(neighbor_id)
                     neighbor: star.Star = neighbor_vertex.value
 
                     if neighbor:
                         neighbor_coords = ( (neighbor.coordinates.x + delta_x) * self.scale , (neighbor.coordinates.y + delta_y) * self.scale )
-
                         pygame.draw.line(screen, (85, 85, 85), star_coords, neighbor_coords, 1)
-
                         text_image = NJ.render(f"{distance}", False, (255, 255, 255), (0,0,0))
+                        screen.blit(text_image, ( (star_coords[0] + neighbor_coords[0] - text_image.get_size()[0]) / 2, (star_coords[1] + neighbor_coords[1] - text_image.get_size()[1]) / 2 ))
 
-                        screen.blit(
-                            text_image,
-                            ( (star_coords[0] + neighbor_coords[0] - text_image.get_size()[0]) / 2, (star_coords[1] + neighbor_coords[1] - text_image.get_size()[1]) / 2 ))
-
-                pygame.draw.circle(screen, star.get_constellation_color(current_star), star_coords, star_radius)
+                if pygame.Rect(star_coords[0] - star_radius, star_coords[1] - star_radius, star_radius * 2, star_radius * 2).collidepoint(pygame.mouse.get_pos()):
+                    hovered_node = current_star
+                    pygame.draw.circle(screen, (255, 0, 255), star_coords, star_radius + 5, 2)
+        return hovered_node

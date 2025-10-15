@@ -19,8 +19,11 @@ def graph_from_file(file_path: str) -> Graph:
         for constellation_data in data["constellations"]:
             for star_data in constellation_data["stars"]:
                 # handle multiple owner constellations
-                if universe.get_vertex(star_data["id"]):
-                    new_star.constellations.append(constellation_data["name"])
+                redundant_star = universe.get_vertex(star_data["id"])
+                if redundant_star != None:
+                    # just add the constellation to the existing star if not already present
+                    if constellation_data["name"] not in redundant_star.value.constellations:
+                        redundant_star.value.constellations.append(constellation_data["name"])
                     continue
 
                 new_star = star.Star(star_data["id"])
