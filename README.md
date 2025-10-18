@@ -1,6 +1,8 @@
 # Carechucho 🐐🥀
 
-Some sort of interstellar explorer animal.
+Explore different stars before your burro dies. Perform interesting research labors and eat grass like a true patriot.
+
+![title](preview.png)
 
 ## 🎮️ Running
 
@@ -12,8 +14,8 @@ Make sure you have the required dependencies installed first
 
 ## Docs
 
-Very soon with github pages...
+Understand this thing very easily with the online docs:  [Github Pages docs](https://alex461538.github.io/carechucho/)
 
 ## 📜 License
 
-This project is licensed under the MIT license, do whatever you want with this trash.
+This project is licensed under the MIT license, do whatever you want with this trash. 🐤
