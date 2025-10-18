@@ -32,6 +32,7 @@ def graph_from_file(file_path: str) -> Graph:
 
                 new_star.name = star_data.get("label", "unknown")
                 new_star.radius = star_data.get("radius", 0.4)
+                new_star.hypergiant = star_data.get("hypergiant", False)
                 new_star.timeToEat = star_data.get("timeToEat", 3)
                 new_star.amountOfEnergy = star_data.get("amountOfEnergy", 1)
                 coordenates = star_data.get("coordenates", {"x": 0, "y": 0})

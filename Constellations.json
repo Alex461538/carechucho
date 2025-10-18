@@ -70,6 +70,10 @@
             {
               "starId": 9,
               "distance": 15
+            },
+            {
+              "starId": 13,
+              "distance": 6
             }
           ],
           "radius": 1,
@@ -122,6 +126,10 @@
             },
             {
               "starId": 17,
+              "distance": 45
+            },
+            {
+              "starId": 12,
               "distance": 45
             }
           ],

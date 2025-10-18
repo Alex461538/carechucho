@@ -10,7 +10,7 @@ class Vertex:
 
     def add_neighbor(self, neighbor, weight=0):
         """Add a neighbor to this vertex."""
-        self.adjacent[neighbor] = weight
+        self.adjacent[neighbor] = (weight, False)
 
     def get_connections(self):
         """Get all neighbors of this vertex."""
@@ -24,6 +24,16 @@ class Graph:
     def __init__(self):
         self.vertex_list = {}
         self.num_vertex = 0
+    
+    def lock_edge(self, from_id, to_id, value=None):
+        """Lock an edge between two vertices."""
+        if from_id in self.vertex_list and to_id in self.vertex_list:
+            if to_id in self.vertex_list[from_id].adjacent:
+                weight, l = self.vertex_list[from_id].adjacent[to_id]
+                self.vertex_list[from_id].adjacent[to_id] = (weight, value if value is not None else not l)
+            if from_id in self.vertex_list[to_id].adjacent:
+                weight, l = self.vertex_list[to_id].adjacent[from_id]
+                self.vertex_list[to_id].adjacent[from_id] = (weight, value if value is not None else not l)
 
     def add_vertex(self, id, value = None):
         """Add a vertex to the graph."""
@@ -43,7 +53,9 @@ class Graph:
             self.add_vertex(from_id)
         if to_id not in self.vertex_list:
             self.add_vertex(to_id)
+
         self.vertex_list[from_id].add_neighbor(to_id, weight)
+        self.vertex_list[to_id].add_neighbor(from_id, weight)
 
     def get_vertices(self):
         """Get all vertex ids in the graph."""

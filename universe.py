@@ -2,11 +2,10 @@
 
 import pygame
 
+import res
 from graph import Graph
 import star
 import file_utils
-
-NJ = pygame.font.Font("font/credits-small.ttf", 24)
 
 class Universe():
     def __init__(self, screen_width: int = 0, screen_height: int = 0):
@@ -31,7 +30,7 @@ class Universe():
     def zoom(self, amount: int, mouse_position: pygame.math.Vector2 = pygame.math.Vector2(0,0)):
         """ Zoom the universe in or out by a given amount """
         old_scale = self.scale
-        self.scale = max(0.1, min(self.scale + amount * 0.1 * self.scale, 5.0))
+        self.scale = max(0.4, min(self.scale + amount * 0.1 * self.scale, 10.0))
 
         pointer = pygame.math.Vector2(
             (mouse_position.x / old_scale) - self.x * old_scale,
@@ -68,6 +67,7 @@ class Universe():
         delta_y = (- self.y) * self.scale
 
         hovered_node = None
+        hovered_edge = None
 
         for [id, vertex] in self.graph.vertex_list.items():
             current_star: star.Star = vertex.value
@@ -78,17 +78,33 @@ class Universe():
 
                 pygame.draw.circle(screen, star.get_constellation_color(current_star), star_coords, star_radius)
 
-                for [neighbor_id, distance] in vertex.get_connections().items():
+                if current_star.hypergiant:
+                    pygame.draw.circle(screen, (255, 180, 0), star_coords, star_radius + 5, 2)
+
+                for [neighbor_id, (distance, locked)] in vertex.get_connections().items():
                     neighbor_vertex = self.graph.get_vertex(neighbor_id)
                     neighbor: star.Star = neighbor_vertex.value
 
                     if neighbor:
                         neighbor_coords = ( (neighbor.coordinates.x + delta_x) * self.scale , (neighbor.coordinates.y + delta_y) * self.scale )
+
+                        middle_point = ( (star_coords[0] + neighbor_coords[0]) / 2, (star_coords[1] + neighbor_coords[1]) / 2 )
+
                         pygame.draw.line(screen, (85, 85, 85), star_coords, neighbor_coords, 1)
-                        text_image = NJ.render(f"{distance}", False, (255, 255, 255), (0,0,0))
+
+                        if locked:
+                            pygame.draw.line(screen, (255, 60, 60), star_coords, neighbor_coords, 3)
+                        
+                        BG_COLOR = (0, 0, 0) if not locked else (50, 0, 0)
+                        text_image = res.Font.NJ.value.render(f"{distance}", False, (255, 255, 255), BG_COLOR)
                         screen.blit(text_image, ( (star_coords[0] + neighbor_coords[0] - text_image.get_size()[0]) / 2, (star_coords[1] + neighbor_coords[1] - text_image.get_size()[1]) / 2 ))
+
+                        if pygame.Rect(middle_point[0] - star_radius, middle_point[1] - star_radius, star_radius * 2, star_radius * 2).collidepoint(pygame.mouse.get_pos()):
+                            hovered_edge = (current_star.id, neighbor.id)
+                            pygame.draw.circle(screen, (255, 0, 255), middle_point, max(10, self.scale * 10) + 5, 2)
 
                 if pygame.Rect(star_coords[0] - star_radius, star_coords[1] - star_radius, star_radius * 2, star_radius * 2).collidepoint(pygame.mouse.get_pos()):
                     hovered_node = current_star
                     pygame.draw.circle(screen, (255, 0, 255), star_coords, star_radius + 5, 2)
-        return hovered_node
+
+        return (hovered_node, hovered_edge)
