@@ -60,6 +60,7 @@ def main():
         if hovered_edge:
             if input_manager.mouse_buttons[0] == MouseButtonState.PRESSED:
                 universe.graph.lock_edge(hovered_edge[0], hovered_edge[1])
+                traversal.calculate()
 
         if hovered_star:
             text_image = res.Font.NJ.value.render(f"{hovered_star.name}", False, (255, 255, 255), (0,0,0))

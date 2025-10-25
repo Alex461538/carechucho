@@ -28,6 +28,7 @@ class Traversal():
         self.x = universe.x
         self.y = universe.y
         self.scale = universe.scale
+        self.base_graph: Graph = universe.graph
     
     def update(self, *args, **kwargs):
         """ Update universe's main logic """
@@ -126,7 +127,7 @@ class Traversal():
                     edge_weight = edge[1][0]
                     edge_locked = edge[1][1]
 
-                    next_weight = vertex_distance + edge_weight
+                    next_weight = vertex_distance + (float("inf") if edge_locked else edge_weight)
 
                     #print("\t\tedge: ", edge, next_weight)
 
@@ -137,12 +138,15 @@ class Traversal():
             #print("it: ", i, weights)
             if not improved:
                 break
-
+        
         # Get longest route
-        max_route = list(weights.items())[0]
+        max_route = None
+
         for v_info in weights.items():
-            if v_info[1][2] > max_route[1][2]:
+            if v_info[1][2] != float("inf") and ( max_route is None or v_info[1][2] > max_route[1][2] ):
                 max_route = v_info
+
+        #print(weights, max_route)
         
         while max_route != None:
             v_id = max_route[0]
