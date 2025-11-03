@@ -2,10 +2,20 @@
 
 import pygame
 
+import json
+
 import res
 from graph import Graph
 import star
-import file_utils
+
+class Stats():
+    burroenergiaInicial: float = 100
+    pasto: int = 300
+    startAge: int = 12
+    deathAge: int = 3567
+
+    def __repr__(self):
+        return f"{self.startAge}-{self.deathAge} years . {self.burroenergiaInicial}% . {self.pasto}Kg grass"
 
 class Universe():
     def __init__(self, screen_width: int = 0, screen_height: int = 0):
@@ -49,13 +59,61 @@ class Universe():
         """ Update universe's main logic """
         return
     
-    def graph_from_file(self, file_path: str):
+    def graph_from_file(self, file_path: str) -> Stats:
         """
         Load from a JSON file.
         Args:
             file_path (str): Path to the JSON file.
         """
-        self.graph = file_utils.graph_from_file(file_path)
+        stats = Stats()
+        self.graph = Graph()
+
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+
+            stats.burroenergiaInicial = data["burroenergiaInicial"]
+            stats.pasto = data["pasto"]
+            stats.startAge = data["startAge"]
+            stats.deathAge = data["deathAge"]
+
+            # first load star data
+            for constellation_data in data["constellations"]:
+                for star_data in constellation_data["stars"]:
+                    # handle multiple owner constellations
+                    redundant_star = self.graph.get_vertex(star_data["id"])
+                    if redundant_star != None:
+                        # just add the constellation to the existing star if not already present
+                        if constellation_data["name"] not in redundant_star.value.constellations:
+                            redundant_star.value.constellations.append(constellation_data["name"])
+                        continue
+
+                    new_star = star.Star(star_data["id"])
+
+                    new_star.constellations.append(constellation_data["name"])
+
+                    new_star.name = star_data.get("label", "unknown")
+                    new_star.radius = star_data.get("radius", 0.4)
+                    new_star.hypergiant = star_data.get("hypergiant", False)
+                    new_star.timeToEat = star_data.get("timeToEat", 3)
+                    new_star.amountOfEnergy = star_data.get("amountOfEnergy", 1)
+                    coordenates = star_data.get("coordenates", {"x": 0, "y": 0})
+                    new_star.coordinates = pygame.math.Vector2(
+                        coordenates.get("x", 0),
+                        coordenates.get("y", 0)
+                    )
+
+                    self.graph.add_vertex(new_star.id, new_star)
+            
+            # then load edges
+            for constellation_data in data["constellations"]:
+                for star_data in constellation_data["stars"]:
+                    for connection in star_data.get("linkedTo", []):
+                        if self.graph.get_vertex(connection.get("starId", 0)) == None:
+                            print(f"Warning: Star ID {connection.get('starId', 0)} not found in vertex list.")
+                            continue
+                        self.graph.add_edge(star_data["id"], connection.get("starId", 0), connection.get("distance", 0))
+
+        return stats
     
     def draw(self, screen: pygame.Surface):
         """
