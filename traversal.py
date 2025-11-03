@@ -1,11 +1,13 @@
 """ Module for defining the road in the game """
 
+import copy
 import time
 import pygame
 
 from typing import List
 from graph import Graph, Vertex
 from star import Star
+from universe import Stats
 
 import res
 
@@ -33,9 +35,10 @@ class Traversal():
         self.death_at_end = True
     
     def play(self):
-        self.playing = True
-        self.last_epoch = time.time()
-        self.current_playing_anim_vertex = 0
+        if self.origin and len(self.nodes) > 0:
+            self.playing = True
+            self.last_epoch = time.time()
+            self.current_playing_anim_vertex = 0
 
     def stop(self):
         self.playing = False
@@ -135,27 +138,38 @@ class Traversal():
             return
         
         route: List[int] = [self.origin.id]
-        route_cost: float = 0
+        route_cost: Stats = copy.deepcopy(self.stats)
+        is_deadly = False
 
         it_guard = 0
         
         def compute_next_route(
                 visited_nodes: List[int],
-                current_cost: int
+                current_cost: Stats
         ):
-            nonlocal it_guard, route, route_cost
+            nonlocal it_guard, route, route_cost, is_deadly
             """ Guard for no blocking my entire desktop 🚬 """
             it_guard += 1
             if it_guard > 10000:
                 exit(-1)
             """ Get current star id """
             current_star_id = visited_nodes[ len(visited_nodes) - 1 ]
+            current_star = self.base_graph.get_vertex(current_star_id)
+            """ Add local costs """
+            current_cost.add_out_star(current_star)
             """ Do replacement """
             if len(visited_nodes) > len(route) or ( len(visited_nodes) == len(route) and current_cost < route_cost ):
                 route = visited_nodes
                 route_cost = current_cost
+                is_deadly = current_cost.is_deadly()
+            
+            if current_cost.is_deadly():
+                return
+            
+            could_travel_more = False
+            traveled_more = False
             """ Search more expansion """
-            for neighbor_star_id, (neighbor_star_distance, neighbor_star_locked) in self.base_graph.get_vertex(current_star_id).adjacent.items():
+            for neighbor_star_id, (neighbor_star_distance, neighbor_star_locked) in current_star.adjacent.items():
                 """ 
                 If any longer path is found, it'll be later by other branch
                 This prevents infinite loops (Python hard locks linux btw)
@@ -163,14 +177,22 @@ class Traversal():
                 if neighbor_star_id in visited_nodes or neighbor_star_locked:
                     continue
                 else:
+                    could_travel_more = True
                     # Search for more routes
                     next_visited_nodes = visited_nodes.copy() + [neighbor_star_id]
-                    next_cost = current_cost + neighbor_star_distance
-
-                    print(f"{current_star_id}--{neighbor_star_id} > {next_visited_nodes} : {next_cost}")
-
+                    """ Calculate travel cost """
+                    next_cost = copy.deepcopy(current_cost)
+                    next_cost.add_dst(neighbor_star_distance)
+                    """ Hop """
+                    if next_cost.is_deadly():
+                        continue
+                    traveled_more = True
                     compute_next_route(next_visited_nodes, next_cost)
+            """ If the thing had routes, but could not travel, it died here """
+            if could_travel_more and not traveled_more:
+                is_deadly = True
     
-        compute_next_route(route.copy(), route_cost)
+        compute_next_route(route.copy(), copy.deepcopy(route_cost))
 
         self.nodes = route
+        self.death_at_end = is_deadly

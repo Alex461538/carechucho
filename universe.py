@@ -6,7 +6,7 @@ import json
 
 import res
 from graph import Graph
-import star
+from star import Star, get_constellation_color
 
 class Stats():
     burroenergiaInicial: float = 100
@@ -16,6 +16,30 @@ class Stats():
 
     def __repr__(self):
         return f"{self.startAge}-{self.deathAge} years . {self.burroenergiaInicial}% . {self.pasto}Kg grass"
+    
+    def add_dst(self, next_distance: float):
+        self.startAge += next_distance
+    
+    def add_out_star(self, out_star: Star):
+        pass
+
+    def is_deadly(self):
+        natural_death = self.deathAge < self.startAge
+        energy_loss = self.burroenergiaInicial <= 0
+        starvation = self.pasto <= 0
+        return natural_death or energy_loss or starvation
+
+    def __lt__(self, other):
+        if isinstance(other, Stats):
+            td = self.is_deadly()
+            od = other.is_deadly()
+
+            if not td and od:
+                return True
+            elif td and not od:
+                return False
+            # Compare based on sum of coordinates
+            return self.startAge < other.startAge
 
 class Universe():
     def __init__(self, screen_width: int = 0, screen_height: int = 0):
@@ -87,7 +111,7 @@ class Universe():
                             redundant_star.value.constellations.append(constellation_data["name"])
                         continue
 
-                    new_star = star.Star(star_data["id"])
+                    new_star = Star(star_data["id"])
 
                     new_star.constellations.append(constellation_data["name"])
 
@@ -128,20 +152,20 @@ class Universe():
         hovered_edge = None
 
         for [id, vertex] in self.graph.vertex_list.items():
-            current_star: star.Star = vertex.value
+            current_star: Star = vertex.value
 
             if current_star:
                 star_coords = ( (current_star.coordinates.x + delta_x) * self.scale , (current_star.coordinates.y + delta_y) * self.scale )
                 star_radius = max(1, int(current_star.radius * 10 * self.scale))
 
-                pygame.draw.circle(screen, star.get_constellation_color(current_star), star_coords, star_radius)
+                pygame.draw.circle(screen, get_constellation_color(current_star), star_coords, star_radius)
 
                 if current_star.hypergiant:
                     pygame.draw.circle(screen, (255, 180, 0), star_coords, star_radius + 5, 2)
 
                 for [neighbor_id, (distance, locked)] in vertex.get_connections().items():
                     neighbor_vertex = self.graph.get_vertex(neighbor_id)
-                    neighbor: star.Star = neighbor_vertex.value
+                    neighbor: Star = neighbor_vertex.value
 
                     if neighbor:
                         neighbor_coords = ( (neighbor.coordinates.x + delta_x) * self.scale , (neighbor.coordinates.y + delta_y) * self.scale )
