@@ -15,12 +15,12 @@ class Stats():
     deathAge: int = 3567
 
     def __repr__(self):
-        return f"{self.startAge}-{self.deathAge} years . {self.burroenergiaInicial}% . {self.pasto}Kg grass"
+        return f"{self.startAge} of {self.deathAge} years -- {self.burroenergiaInicial}% energy -- {self.pasto}Kg grass"
     
-    def add_dst(self, next_distance: float):
+    def add_dst(self, next_distance: float, use_only_initial: bool):
         self.startAge += next_distance
     
-    def add_out_star(self, out_star: Star):
+    def add_out_star(self, out_star: Star, use_only_initial: bool):
         pass
 
     def is_deadly(self):

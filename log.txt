@@ -1,0 +1,21 @@
+Generated travel report
+-------------------------------
+Initial: 12 of 200 years -- 100% energy -- 300Kg grass
+-------------------------------
+Visited Beta178
+Before leaving: 12 of 200 years -- 100% energy -- 300Kg grass
+----
+Visited Gama23
+Before leaving: 57 of 200 years -- 100% energy -- 300Kg grass
+----
+Visited Alpha53
+Before leaving: 63 of 200 years -- 100% energy -- 300Kg grass
+----
+Visited Beta23
+Before leaving: 80 of 200 years -- 100% energy -- 300Kg grass
+----
+Visited Alpha1
+Before leaving: 200 of 200 years -- 100% energy -- 300Kg grass
+----
+===============================
+End of travel

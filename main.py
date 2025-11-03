@@ -52,11 +52,13 @@ def main():
                 input_manager.on_mouse_wheel(event)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_g and not traversal.playing:
-                    traversal.use_grass = not traversal.use_grass
+                    traversal.use_only_initial = not traversal.use_only_initial
                     traversal.calculate()
                 if event.key == pygame.K_i and not traversal.playing:
                     traversal.use_investigative_labors = not traversal.use_investigative_labors
                     traversal.calculate()
+                if event.key == pygame.K_r and not traversal.playing:
+                    traversal.generate_report()
                 if event.key == pygame.K_p:
                     if traversal.playing:
                         traversal.stop()
@@ -101,19 +103,19 @@ def main():
         unactive_color = (0,0,0)
         active_color = (0, 50 + 20 * math.sin( time.time() * 5 ), 40)
 
-        text_image = res.Font.NJ.value.render(f"[P]: Playing traversal", False, (255, 255, 255), active_color if traversal.playing else unactive_color)
+        text_image = res.Font.NJ.value.render("[P]: Playing traversal" if traversal.playing else "[P]: Play traversal", False, (255, 255, 255), active_color if traversal.playing else unactive_color)
         screen.blit(text_image, ( 0, SCREEN_HEIGHT - text_image.get_size()[1] * 6) )
 
         if traversal.playing:
             unactive_color = (20,20,20)
             active_color = (40, 40, 40)
         
-        text_image = res.Font.NJ.value.render(f"{traversal.stats}", False, (255, 255, 255), (0,0,0,0))
+        text_image = res.Font.NJ.value.render(f"{traversal.current_stats}", False, (255, 255, 255), (0,0,0,0))
         screen.blit(text_image, ( 0, SCREEN_HEIGHT - text_image.get_size()[1]) )
-        text_image = res.Font.NJ.value.render(f"[G]: Use grass", False, (255, 255, 255), active_color if traversal.use_grass else unactive_color)
+        text_image = res.Font.NJ.value.render(f"[G]: Use only initial stats", False, (255, 255, 255), active_color if traversal.use_only_initial else unactive_color)
         screen.blit(text_image, ( 0, SCREEN_HEIGHT - text_image.get_size()[1] * 3) )
-        text_image = res.Font.NJ.value.render(f"[I]: Use investigative labors", False, (255, 255, 255), active_color if traversal.use_investigative_labors else unactive_color)
-        screen.blit(text_image, ( 0, SCREEN_HEIGHT - text_image.get_size()[1] * 4) )
+        text_image = res.Font.NJ.value.render(f"[R]: Generate calculated route report", False, (255, 255, 255), unactive_color)
+        screen.blit(text_image, ( 0, SCREEN_HEIGHT - text_image.get_size()[1] * 5) )
 
         # flip() the display to put your work on screen
         pygame.display.flip()

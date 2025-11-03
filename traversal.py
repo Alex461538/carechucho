@@ -1,5 +1,7 @@
 """ Module for defining the road in the game """
 
+import os
+import subprocess
 import copy
 import time
 import pygame
@@ -22,17 +24,19 @@ class Traversal():
         self.base_graph: Graph = graph
         self.stats = stats
         self.nodes = []
+        self.stat_lookup: dict[int, Stats] = {}
         self.x = 0
         self.y = 0
         self.scale = 1.0
         self.origin: Star = None
-        self.use_grass = True
+        self.use_only_initial = True
         self.use_investigative_labors = True
         self.playing = False
         self.current_playing_anim_vertex = 0
         self.last_epoch = 0
         self.donkey_pos = (0, 0)
         self.death_at_end = True
+        self.current_stats = {}
     
     def play(self):
         if self.origin and len(self.nodes) > 0:
@@ -79,6 +83,9 @@ class Traversal():
                     if self.death_at_end:
                         res.Sound.DEATH.value.play()
                     self.stop()
+            self.current_stats = self.stat_lookup[ self.nodes[ self.current_playing_anim_vertex ]]
+        else:
+            self.current_stats = self.stats
 
     def set_origin(self, star: Star):
         self.origin = star
@@ -135,6 +142,8 @@ class Traversal():
 
         if self.origin is None:
             self.nodes = []
+            self.stat_lookup = {}
+            self.death_at_end = False
             return
         
         route: List[int] = [self.origin.id]
@@ -142,12 +151,15 @@ class Traversal():
         is_deadly = False
 
         it_guard = 0
+
+        stat_lookup: dict[int, Stats] = {}
         
         def compute_next_route(
                 visited_nodes: List[int],
-                current_cost: Stats
+                current_cost: Stats,
+                sts: dict[int, Stats]
         ):
-            nonlocal it_guard, route, route_cost, is_deadly
+            nonlocal it_guard, route, route_cost, is_deadly, stat_lookup
             """ Guard for no blocking my entire desktop 🚬 """
             it_guard += 1
             if it_guard > 10000:
@@ -156,12 +168,15 @@ class Traversal():
             current_star_id = visited_nodes[ len(visited_nodes) - 1 ]
             current_star = self.base_graph.get_vertex(current_star_id)
             """ Add local costs """
-            current_cost.add_out_star(current_star)
+            current_cost.add_out_star(current_star, self.use_only_initial)
+            """ Register current stats """
+            sts[current_star_id] = current_cost
             """ Do replacement """
             if len(visited_nodes) > len(route) or ( len(visited_nodes) == len(route) and current_cost < route_cost ):
                 route = visited_nodes
                 route_cost = current_cost
                 is_deadly = current_cost.is_deadly()
+                stat_lookup = sts
             
             if current_cost.is_deadly():
                 return
@@ -179,20 +194,61 @@ class Traversal():
                 else:
                     could_travel_more = True
                     # Search for more routes
-                    next_visited_nodes = visited_nodes.copy() + [neighbor_star_id]
+                    next_visited_nodes = copy.deepcopy(visited_nodes) + [neighbor_star_id]
                     """ Calculate travel cost """
                     next_cost = copy.deepcopy(current_cost)
-                    next_cost.add_dst(neighbor_star_distance)
+                    next_cost.add_dst(neighbor_star_distance, self.use_only_initial)
                     """ Hop """
                     if next_cost.is_deadly():
                         continue
                     traveled_more = True
-                    compute_next_route(next_visited_nodes, next_cost)
+                    compute_next_route(next_visited_nodes, next_cost, copy.deepcopy(sts))
             """ If the thing had routes, but could not travel, it died here """
             if could_travel_more and not traveled_more:
                 is_deadly = True
     
-        compute_next_route(route.copy(), copy.deepcopy(route_cost))
+        compute_next_route(copy.deepcopy(route), copy.deepcopy(route_cost), copy.deepcopy(stat_lookup))
 
         self.nodes = route
         self.death_at_end = is_deadly
+        self.stat_lookup = stat_lookup
+    
+    def open_file_in_default_editor(self, filepath):
+        """
+        Opens a file in the user's default text editor.
+        """
+        if os.name == 'nt':  # For Windows
+            os.startfile(filepath)
+        elif os.name == 'posix':  # For macOS and Linux
+            try:
+                subprocess.run(['xdg-open', filepath]) # Linux
+            except FileNotFoundError:
+                try:
+                    subprocess.run(['open', filepath]) # macOS
+                except FileNotFoundError:
+                    print(f"Could not open {filepath} with default editor.")
+        else:
+            print(f"Unsupported operating system: {os.name}")
+    
+    def generate_report(self):
+        if self.origin == None or len(self.nodes) == 0:
+            return
+        
+        with open("log.txt", "w") as log:
+            log.write("Generated travel report\n")
+            log.write("-------------------------------\n")
+            log.write(f"Initial: {self.stats}\n")
+            log.write("-------------------------------\n")
+            for id in self.nodes:
+                star: Star = self.base_graph.get_vertex(id).value
+                stats: Stats = self.stat_lookup[ id ]
+                log.write(f"Visited {star.name}\n")
+                log.write(f"Before leaving: {stats}\n")
+                log.write("----\n")
+            if self.death_at_end:
+                log.write("Died here\n")
+            log.write("===============================\n")
+            log.write("End of travel\n")
+        
+        self.open_file_in_default_editor("log.txt")
+            
