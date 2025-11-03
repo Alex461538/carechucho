@@ -124,81 +124,53 @@ class Traversal():
 
         screen.blit(scaled_image, (donkey_coords[0], donkey_coords[1]))
     
+
     def calculate(self) -> List[int]:
         """
-        Use bellman ford and pray.
+        Priorizes paths by maximum longitude and then minimum cost
         """
+
         if self.origin is None:
+            self.nodes = []
             return
         
+        route: List[int] = [self.origin.id]
+        route_cost: float = 0
 
-        # Declare the weights registry & fill it
-        weights = {}
-        for vertex in self.base_graph.vertex_list.items():
-            if vertex[0] == self.origin.id:
-                weights[ vertex[0] ] = (0, vertex[0], 0)
-            else:
-                weights[ vertex[0] ] = (float('inf'), -1, float("inf"))
+        it_guard = 0
         
-        if len(weights.items()) == 0:
-            return
-        
-        for i in range(len(weights.items())):
-            improved: bool = False
-            # iterate over all vertexes
-            for weight_pair in weights.items():
-                vertex_id = weight_pair[0]
-                vertex_distance = weight_pair[1][0]
-                vertex_from_id = weight_pair[1][1]
-                vertex_jumps = weight_pair[1][2]
-                
-                #print("\tid: ", vertex_id, (vertex_distance, vertex_from_id))
-
-                if (vertex_from_id == -1):
+        def compute_next_route(
+                visited_nodes: List[int],
+                current_cost: int
+        ):
+            nonlocal it_guard, route, route_cost
+            """ Guard for no blocking my entire desktop 🚬 """
+            it_guard += 1
+            if it_guard > 10000:
+                exit(-1)
+            """ Get current star id """
+            current_star_id = visited_nodes[ len(visited_nodes) - 1 ]
+            """ Do replacement """
+            if len(visited_nodes) > len(route) or ( len(visited_nodes) == len(route) and current_cost < route_cost ):
+                route = visited_nodes
+                route_cost = current_cost
+            """ Search more expansion """
+            for neighbor_star_id, (neighbor_star_distance, neighbor_star_locked) in self.base_graph.get_vertex(current_star_id).adjacent.items():
+                """ 
+                If any longer path is found, it'll be later by other branch
+                This prevents infinite loops (Python hard locks linux btw)
+                """
+                if neighbor_star_id in visited_nodes or neighbor_star_locked:
                     continue
+                else:
+                    # Search for more routes
+                    next_visited_nodes = visited_nodes.copy() + [neighbor_star_id]
+                    next_cost = current_cost + neighbor_star_distance
 
-                # iterate over all edeges, assume it is undirected graph
-                for edge in self.base_graph.get_vertex(vertex_id).adjacent.items():
-                    edge_dest_id = edge[0]
-                    edge_weight = edge[1][0]
-                    edge_locked = edge[1][1]
+                    print(f"{current_star_id}--{neighbor_star_id} > {next_visited_nodes} : {next_cost}")
 
-                    next_weight = vertex_distance + (float("inf") if edge_locked else edge_weight)
+                    compute_next_route(next_visited_nodes, next_cost)
+    
+        compute_next_route(route.copy(), route_cost)
 
-                    #print("\t\tedge: ", edge, next_weight)
-
-                    if weights[edge_dest_id][0] > next_weight:
-                        improved = True
-                        weights[edge_dest_id] = (next_weight, vertex_id, vertex_jumps + 1)
-
-            #print("it: ", i, weights)
-            if not improved:
-                break
-        
-        # Get longest route
-        max_route = None
-
-        for v_info in weights.items():
-            if v_info[1][2] != float("inf") and ( max_route is None or v_info[1][2] > max_route[1][2] ):
-                max_route = v_info
-
-        #print(weights, max_route)
-
-        it = 0
-        self.nodes = []
-
-        while it < 300:
-            it += 1
-            v_id = max_route[0]
-            v_from = max_route[1][1]
-
-            self.nodes.append(v_id)
-
-            if v_id == v_from:
-                break
-            else:
-                max_route = (v_from, weights[v_from])
-        
-        self.nodes = self.nodes[::-1]
-
-        print(self.nodes)
+        self.nodes = route

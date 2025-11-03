@@ -6,7 +6,7 @@ class Vertex:
     def __init__(self, id):
         self.id = id
         self.value: any = None
-        self.adjacent = {}
+        self.adjacent: dict[int, tuple[float, bool]] = {}
 
     def add_neighbor(self, neighbor, weight=0):
         """Add a neighbor to this vertex."""
@@ -22,7 +22,7 @@ class Vertex:
 
 class Graph:
     def __init__(self):
-        self.vertex_list = {}
+        self.vertex_list: dict[int, Vertex] = {}
         self.num_vertex = 0
     
     def lock_edge(self, from_id, to_id, value=None):
