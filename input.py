@@ -1,3 +1,6 @@
+""" 
+Definitions for advanced mouse input handling
+"""
 import pygame
 from pygame.math import Vector2
 
@@ -11,7 +14,7 @@ class MouseButtonState(IntEnum):
 
 class InputManager:
     """
-        An old & fancy input manager used in a js game.
+        An old & fancy input manager from a js game.
     """
     def __init__(self, screen_width: float = 1, screen_height: float = 1):
         self.screen_width = screen_width
@@ -36,6 +39,7 @@ class InputManager:
         self.is_focused = False
     
     def get_bounding_rect(self):
+        """ Gets the bounding rect for the input to function """
         # Adapt this to return the actual bounds of your element
         # Example return format:
         return {
@@ -46,10 +50,12 @@ class InputManager:
         }
     
     def on_focus(self, e):
+        """ Event handler for element focus (JS) """
         self.is_focused = True
         self.on_mouse_down(e)
     
     def on_blur(self, e):
+        """ Event handler for element blur (JS) """
         self.is_focused = False
     
     def get_bounding_rect(self):
@@ -63,12 +69,14 @@ class InputManager:
         }
     
     def on_mouse_wheel(self, event):
+        """ Event handler for mouse wheel movements"""
         self._mouse_wheel_a = 8
         # Adapt delta values based on your framework
         self.mouse_scroll_hard.x = event.x
         self.mouse_scroll_hard.y = event.y
     
     def get_mouse_buttons(self):
+        """ Updates the input state of the mouse buttons """
         def down(button):
             rect = self.get_bounding_rect()
             self.mouse_press_position[button] = Vector2(self.mouse_position.x - rect['left'], self.mouse_position.y - rect['top'])
@@ -97,6 +105,7 @@ class InputManager:
             down(2)
     
     def get_mouse_position(self):
+        """ Updates the input state of mouse positions """
         # Get screen rect
         rect = self.get_bounding_rect()
 
@@ -116,6 +125,7 @@ class InputManager:
         self.get_mouse_buttons()
     
     def update(self):
+        """ Updates overall state """
         self.get_values_fron_pygame()
 
         for i in range(len(self.mouse_buttons)):

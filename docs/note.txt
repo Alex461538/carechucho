@@ -1,0 +1,7 @@
+### Annotation for doc building
+
+```bash
+sphinx-apidoc -o sphinx .
+cd sphinx
+make latexpdf
+```

@@ -14,6 +14,7 @@ from universe import Stats
 import res
 
 class Traversal():
+    """ Class for representing traversals along a given universe's graph """
     def __init__(self, graph, stats):
         """ 
         Universe constructor
@@ -39,16 +40,27 @@ class Traversal():
         self.current_stats = {}
     
     def play(self):
+        """ 
+        Plays the traversal animation from the beginning
+        """
         if self.origin and len(self.nodes) > 0:
             self.playing = True
             self.last_epoch = time.time()
             self.current_playing_anim_vertex = 0
 
     def stop(self):
+        """ 
+        Stops the traversal animation if it's running
+        """
         self.playing = False
         self.current_playing_anim_vertex = 0
 
-    def get_origin_coords(self):
+    def get_origin_coords(self) -> tuple[float, float]:
+        """ 
+        Returns the screen coordinates of the traversal origin, or the current standing node
+        Returns:
+            (tuple[float, float]): x,y coords
+        """
         if not self.playing and len(self.nodes) > 0:
             if (self.origin):
                 delta_x = (self.x) * self.scale
@@ -64,6 +76,11 @@ class Traversal():
         return None
     
     def update(self, universe):
+        """ 
+        Updates any required per-frame internal variables
+        Args:
+            universe (Universe): The universe the traversal is for
+        """
         self.x = universe.x
         self.y = universe.y
         self.scale = universe.scale
@@ -88,6 +105,11 @@ class Traversal():
             self.current_stats = self.stats
 
     def set_origin(self, star: Star):
+        """ 
+        Sets the traversal origin and recalculates
+        Args:
+            star (Star): The new origin
+        """
         self.origin = star
         oc = self.get_origin_coords()
         if oc:
@@ -116,6 +138,11 @@ class Traversal():
             pygame.draw.line(screen, (85, 255, 85), s1c, s2c, 5)
 
     def draw_donkey(self, screen: pygame.Surface):
+        """
+        Draw the donkey to a surface
+        Args:
+            screen (pygame.Surface): The surface to draw the donkey on
+        """
         if self.origin is None:
             return
         
@@ -133,13 +160,12 @@ class Traversal():
         pygame.draw.ellipse(screen, res.Color.BACKGROUND.value, (donkey_coords[0] + scaled_image.get_size()[0] / 2 - 40*sss, donkey_coords[1] + scaled_image.get_size()[1] - 10*sss, 40*sss, 15*sss ))
 
         screen.blit(scaled_image, (donkey_coords[0], donkey_coords[1]))
-    
 
-    def calculate(self) -> List[int]:
+    def calculate(self):
+        """ 
+        Calculates the maximum path for the current traversal
+        - Priorizes paths by maximum longitude and then minimum stat cost
         """
-        Priorizes paths by maximum longitude and then minimum cost
-        """
-
         if self.origin is None:
             self.nodes = []
             self.stat_lookup = {}
@@ -231,6 +257,9 @@ class Traversal():
             print(f"Unsupported operating system: {os.name}")
     
     def generate_report(self):
+        """ 
+        Generates and opens a traversal report in the default text editor
+        """
         if self.origin == None or len(self.nodes) == 0:
             return
         

@@ -1,3 +1,4 @@
+""" Definitions for graph construction & management """
 import pygame
 
 class Vertex:

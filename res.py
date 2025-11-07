@@ -1,3 +1,6 @@
+""" 
+Preloaded resources file
+"""
 import pygame
 from enum import Enum
 

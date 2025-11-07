@@ -1,6 +1,10 @@
+""" 
+Definitions for stars & constellations
+"""
 import pygame
 
 class Star:
+    """ Class for representing a star """
     def __init__(self, id):
         self.id = id
         self.name = ""
@@ -12,7 +16,10 @@ class Star:
         self.constellations = []
         self.activities: list[ tuple[str, float, float] ] = []
 
-    def get_activities_str(self):
+    def get_activities_str(self) -> str:
+        """
+        Returns a string representation of this star
+        """
         return "\n".join( [ f"{act[0]}, eng: {act[1]} yea: {act[2]}" for act in self.activities ] )
 
 constellation_colors = {}

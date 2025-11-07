@@ -18,4 +18,4 @@ Understand this thing very easily with the online docs:  [Github Pages docs](htt
 
 ## 📜 License
 
-This project is licensed under the MIT license, do whatever you want with this trash. 🐤
+This project is licensed under the MIT license, do whatever you want with this. 🐤

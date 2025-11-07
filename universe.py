@@ -9,6 +9,7 @@ from graph import Graph
 from star import Star, get_constellation_color
 
 class Stats():
+    """ Class representation of a donkey's stats at a certain moment """
     burroenergiaInicial: float = 100
     pasto: int = 300
     startAge: int = 12
@@ -21,11 +22,13 @@ class Stats():
         return f"{ min(self.startAge, self.deathAge) } of { self.deathAge } years -- { min(100, max(0, round(self.burroenergiaInicial, 2))) }% energy -- { max(0, self.pasto) }Kg grass"
     
     @staticmethod
-    def get_eating_kg_per_year():
+    def get_eating_kg_per_year() -> float:
+        """ Returns how many Kg of grass the donkey eats per year """
         return 1
     
     @staticmethod
-    def get_health_from_energy(energy):
+    def get_health_from_energy(energy: float) -> str:
+        """ Gets the health name from a given amount of burroEnergia """
         k = energy / 25
         if k <= 0:
             return "muerto"
@@ -39,7 +42,8 @@ class Stats():
             return "excelente"
     
     @staticmethod
-    def eating_energy_intake_from_health(health):
+    def eating_energy_intake_from_health(health: float) -> float:
+        """ Returns the energy gain per grass Kg from a given burroEnergia level """
         if health == "excelente":
             return 7
         if health == "buena":
@@ -52,9 +56,11 @@ class Stats():
             return 0
     
     def add_dst(self, next_distance: float, use_only_initial: bool):
+        """ Adds the grind associated with the star-star travel """
         self.startAge += next_distance
     
     def add_out_star(self, out_star: Star, use_only_initial: bool):
+        """ Adds the grind associated with the star stay """
         self.meta = {}
 
         shouldEat = self.burroenergiaInicial < 50
@@ -97,6 +103,7 @@ class Stats():
         pass
 
     def get_death_causes(self):
+        """ Gets the death causes from the current stats """
         causes = []
         if self.deathAge < self.startAge:
             causes.append("natural_death")
@@ -107,6 +114,7 @@ class Stats():
         return causes
 
     def is_deadly(self):
+        """ Tells if the current stats are deadly """
         return len(self.get_death_causes()) > 0
 
     def __lt__(self, other):
@@ -124,6 +132,7 @@ class Stats():
             return improves_age
 
 class Universe():
+    """ Class for representing and managing a graph of stars """
     def __init__(self, screen_width: int = 0, screen_height: int = 0):
         """ 
         Universe constructor
