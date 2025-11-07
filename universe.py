@@ -14,20 +14,100 @@ class Stats():
     startAge: int = 12
     deathAge: int = 3567
 
+    def __init__(self):
+        meta = {}
+
     def __repr__(self):
-        return f"{self.startAge} of {self.deathAge} years -- {self.burroenergiaInicial}% energy -- {self.pasto}Kg grass"
+        return f"{ min(self.startAge, self.deathAge) } of { self.deathAge } years -- { min(100, max(0, round(self.burroenergiaInicial, 2))) }% energy -- { max(0, self.pasto) }Kg grass"
+    
+    @staticmethod
+    def get_eating_kg_per_year():
+        return 1
+    
+    @staticmethod
+    def get_health_from_energy(energy):
+        k = energy / 25
+        if k <= 0:
+            return "muerto"
+        elif k <= 1:
+            return "moribundo"
+        elif k <= 2:
+            return "mala"
+        elif k <= 3:
+            return "buena"
+        else:
+            return "excelente"
+    
+    @staticmethod
+    def eating_energy_intake_from_health(health):
+        if health == "excelente":
+            return 7
+        if health == "buena":
+            return 5
+        if health == "mala":
+            return 3
+        if health == "moribundo":
+            return 2
+        else:
+            return 0
     
     def add_dst(self, next_distance: float, use_only_initial: bool):
         self.startAge += next_distance
     
     def add_out_star(self, out_star: Star, use_only_initial: bool):
+        self.meta = {}
+
+        shouldEat = self.burroenergiaInicial < 50
+        timeEating = out_star.timeToEat if shouldEat else 0
+        timeAct = out_star.timeToEat if shouldEat else out_star.timeToEat * 2
+
+        self.meta["arriveYears"] = self.startAge
+        self.meta["ateTime"] = timeEating
+        self.meta["invTime"] = timeAct
+
+        self.startAge += timeEating
+
+        """ If not died while eating grass, calculate the gained stats """
+        if self.is_deadly():
+            self.meta["died"] = "while eating"
+            return
+        else:
+            consumedKg = int( timeEating * Stats.get_eating_kg_per_year() )
+            self.meta["kg"] = consumedKg
+            for _ in range(consumedKg):
+                self.pasto -= 1
+                self.burroenergiaInicial += Stats.eating_energy_intake_from_health( Stats.get_health_from_energy( self.burroenergiaInicial ) )
+        
+        if use_only_initial:
+            """ Continue if not died after investigating (Losses not included) """
+            self.startAge += timeAct
+            if self.is_deadly():
+                self.meta["died"] = "while investigating"
+        elif len(out_star.activities) > 0:
+            """ Continue if not died after investigating (Losses included) """
+            timePerActivity = timeAct / len(out_star.activities)
+            for act in out_star.activities:
+                # Add energy loss
+                self.burroenergiaInicial -= act[1] * timePerActivity
+                # Add year loss
+                self.startAge += act[2]
+                if self.is_deadly():
+                    self.meta["died"] = f"while investigating: {act[0]}"
+            pass
         pass
 
+    def get_death_causes(self):
+        causes = []
+        if self.deathAge < self.startAge:
+            causes.append("natural_death")
+        if self.burroenergiaInicial <= 0:
+            causes.append("energy_loss")
+        if self.pasto <= 0:
+            causes.append("starvation")
+        return causes
+
     def is_deadly(self):
-        natural_death = self.deathAge < self.startAge
-        energy_loss = self.burroenergiaInicial <= 0
-        starvation = self.pasto <= 0
-        return natural_death or energy_loss or starvation
+        return len(self.get_death_causes()) > 0
 
     def __lt__(self, other):
         if isinstance(other, Stats):
@@ -39,7 +119,9 @@ class Stats():
             elif td and not od:
                 return False
             # Compare based on sum of coordinates
-            return self.startAge < other.startAge
+            improves_age = self.startAge < other.startAge
+            improves_energy = self.burroenergiaInicial < other.burroenergiaInicial
+            return improves_age
 
 class Universe():
     def __init__(self, screen_width: int = 0, screen_height: int = 0):
@@ -109,6 +191,11 @@ class Universe():
                         # just add the constellation to the existing star if not already present
                         if constellation_data["name"] not in redundant_star.value.constellations:
                             redundant_star.value.constellations.append(constellation_data["name"])
+                        for act in star_data.get("activities", []):
+                            if type(act) == list and len(act) == 3 and type(act[0]) == str and type(act[1]) in [int, float] and type(act[2]) in [int, float]:
+                                activity = (act[0], act[1], act[2])
+                                if not activity in redundant_star.value.activities:
+                                    redundant_star.value.activities.append( activity )
                         continue
 
                     new_star = Star(star_data["id"])
@@ -125,7 +212,10 @@ class Universe():
                         coordenates.get("x", 0),
                         coordenates.get("y", 0)
                     )
-
+                    for act in star_data.get("activities", []):
+                        if type(act) == list and len(act) == 3 and type(act[0]) == str and type(act[1]) in [int, float] and type(act[2]) in [int, float]:
+                            activity = (act[0], act[1], act[2])
+                            new_star.activities.append( activity )
                     self.graph.add_vertex(new_star.id, new_star)
             
             # then load edges

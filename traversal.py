@@ -168,7 +168,7 @@ class Traversal():
             current_star_id = visited_nodes[ len(visited_nodes) - 1 ]
             current_star = self.base_graph.get_vertex(current_star_id)
             """ Add local costs """
-            current_cost.add_out_star(current_star, self.use_only_initial)
+            current_cost.add_out_star(current_star.value, self.use_only_initial)
             """ Register current stats """
             sts[current_star_id] = current_cost
             """ Do replacement """
@@ -242,11 +242,15 @@ class Traversal():
             for id in self.nodes:
                 star: Star = self.base_graph.get_vertex(id).value
                 stats: Stats = self.stat_lookup[ id ]
-                log.write(f"Visited {star.name}\n")
-                log.write(f"Before leaving: {stats}\n")
+                print(stats.meta)
+                log.write(f"Visited {star.name}, arrived with {stats.meta["arriveYears"]} years.\n")
+                log.write(f"Spent on stay {star.timeToEat * 2} years, ate {stats.meta["kg"]}Kg of grass.\n")
+                log.write(f"After staying: {stats}\n")
                 log.write("----\n")
-            if self.death_at_end:
-                log.write("Died here\n")
+            if self.death_at_end and not "died" in stats.meta:
+                log.write("Died: while traveling\n")
+            elif self.death_at_end:
+                log.write(f"Died: {stats.meta["died"]}\n")
             log.write("===============================\n")
             log.write("End of travel\n")
         

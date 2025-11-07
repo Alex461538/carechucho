@@ -1,9 +1,5 @@
 import pygame
 
-class Activity:
-    rottingUnits: int = 0
-    name: str = "Metamaterial discovery"
-
 class Star:
     def __init__(self, id):
         self.id = id
@@ -14,7 +10,10 @@ class Star:
         self.coordinates = pygame.math.Vector2(0,0)
         self.hypergiant = False
         self.constellations = []
-        self.activities: list[Activity] = []
+        self.activities: list[ tuple[str, float, float] ] = []
+
+    def get_activities_str(self):
+        return "\n".join( [ f"{act[0]}, eng: {act[1]} yea: {act[2]}" for act in self.activities ] )
 
 constellation_colors = {}
 

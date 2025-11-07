@@ -21,13 +21,17 @@
             }
           ],
           "radius": 0.4,
-          "timeToEat": 3,
+          "timeToEat": 2,
           "amountOfEnergy": 1,
           "coordenates": {
             "x": 25,
             "y": 34
           },
-          "hypergiant": false
+          "hypergiant": false,
+          "activities": [
+            ["peek at the void", 20, 10],
+            ["Find cure for hiv", 10, 0]
+          ]
         },
         {
           "id": 2,
@@ -53,7 +57,10 @@
             "x": 37,
             "y": 15
           },
-          "hypergiant": false
+          "hypergiant": false,
+          "activities": [
+            ["sleep", -6, -27]
+          ]
         },
         {
           "id": 3,
@@ -77,13 +84,16 @@
             }
           ],
           "radius": 1,
-          "timeToEat": 1,
+          "timeToEat": 4,
           "amountOfEnergy": 3,
           "coordenates": {
             "x": 75,
             "y": 43
           },
-          "hypergiant": true
+          "hypergiant": true,
+          "activities": [
+            ["peek at the void", 15, 0]
+          ]
         }
       ]
     },
@@ -158,7 +168,11 @@
             "x": 75,
             "y": 43
           },
-          "hypergiant": true
+          "hypergiant": true,
+          "activities": [
+            ["peek at the void", 2, 0],
+            ["cook japanese food", 2, 0]
+          ]
         }
       ]
     }

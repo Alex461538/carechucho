@@ -4,7 +4,7 @@ import pygame
 import time
 import math
 
-SCREEN_WIDTH = 720
+SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 720
 
 # pygame setup
@@ -92,7 +92,21 @@ def main():
                     traversal.calculate()
 
             if hovered_star:
-                text_image = res.Font.NJ.value.render(f"{hovered_star.name}", False, (255, 255, 255), (0,0,0))
+                def font_multiline_draw(font: pygame.font.Font, text: str, color, bg):
+                    text_lines = list(filter(bool, text.split("\n")))
+                    lines = [ font.render(line, False, color, bg) for line in text_lines ]
+                    width = max([ x.get_size()[0] for x in lines ])
+                    height = sum([ x.get_size()[1] for x in lines ])
+                    surface = pygame.Surface((width, height))
+                    surface.fill(bg)
+                    ach = 0
+                    for line in lines:
+                        surface.blit(line, (0, ach))
+                        ach += line.get_size()[1]
+                    return surface
+                    ## res.Font.NJ.value.render(, False, (255, 255, 255), (0,0,0))
+
+                text_image = font_multiline_draw(res.Font.NJ.value, f"{hovered_star.name}\n{hovered_star.get_activities_str()}", (255, 255, 255), (0,0,0))
                 screen.blit(text_image, ( input_manager.mouse_position.x, input_manager.mouse_position.y - text_image.get_size()[1] ) )
 
                 if input_manager.mouse_buttons[0] == MouseButtonState.PRESSED:
