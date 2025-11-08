@@ -24,12 +24,17 @@ from input import InputManager, MouseButtonState
 from traversal import Traversal
 from editact import ActivityEditorApp
 
+paused = False
+
 def edit_activities(acts: list[tuple[str, float, float]]):
     """ Opens a menu for editing the given activities list """
     def x(acts):
+        global paused
+        paused = True
         root = tk.Tk()
         app = ActivityEditorApp(root, acts)
         root.mainloop()
+        paused = False
     # Race conditions? I don't care, just finish
     thread = Thread(target = x, args = (acts, ))
     thread.start()
@@ -43,7 +48,14 @@ def main():
     stats = universe.graph_from_file("Constellations.json")
     traversal = Traversal(universe.graph, stats)
     running = True
+    global paused
     while running:
+        if paused:
+            pygame.event.get()
+            pygame.display.flip()
+            # limits FPS to framerate
+            clock.tick(30)
+            continue
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
         for event in pygame.event.get():
