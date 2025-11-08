@@ -1,5 +1,8 @@
 """Main module for the project."""
 
+import tkinter as tk
+from tkinter import ttk, messagebox
+
 import pygame
 import time
 import math
@@ -15,32 +18,30 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SCALED)
 clock = pygame.time.Clock()
 
 import res
+from threading import Thread
 from universe import Universe
 from input import InputManager, MouseButtonState
 from traversal import Traversal
+from editact import ActivityEditorApp
 
-""" 
-TODO IMPORTANT:
-    Modificar el core del traversal para manejar los datos requeridos
-
-2.0 Animar ruta
-1.2 traversal a partir de condiciones
-0.8 Carga de archivo en interfaz
-0.5 Bloqueo de caminos
-"""
+def edit_activities(acts: list[tuple[str, float, float]]):
+    """ Opens a menu for editing the given activities list """
+    def x(acts):
+        root = tk.Tk()
+        app = ActivityEditorApp(root, acts)
+        root.mainloop()
+    # Race conditions? I don't care, just finish
+    thread = Thread(target = x, args = (acts, ))
+    thread.start()
 
 def main():
     """
     Main loop for the project.
     """
     input_manager = InputManager(SCREEN_WIDTH, SCREEN_HEIGHT)
-
     universe = Universe(SCREEN_WIDTH, SCREEN_HEIGHT)
-
     stats = universe.graph_from_file("Constellations.json")
-
     traversal = Traversal(universe.graph, stats)
-
     running = True
     while running:
         # poll for events
@@ -110,9 +111,13 @@ def main():
                 screen.blit(text_image, ( input_manager.mouse_position.x, input_manager.mouse_position.y - text_image.get_size()[1] ) )
 
                 if input_manager.mouse_buttons[0] == MouseButtonState.PRESSED:
-                    print(f"Clicked on star: {hovered_star.name} (ID: {hovered_star.id}) in constellations: {', '.join(hovered_star.constellations)}")
+                    print(f"Setted as origin: {hovered_star.name} (ID: {hovered_star.id}) in constellations: {', '.join(hovered_star.constellations)}")
 
                     traversal.set_origin(hovered_star)
+                elif input_manager.mouse_buttons[2] == MouseButtonState.PRESSED:
+                    print(f"Edit activities: {hovered_star.name} (ID: {hovered_star.id}) in constellations: {', '.join(hovered_star.constellations)}")
+                    print(hovered_star.activities)
+                    edit_activities( hovered_star.activities )
         
         unactive_color = (0,0,0)
         active_color = (0, 50 + 20 * math.sin( time.time() * 5 ), 40)
