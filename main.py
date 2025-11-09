@@ -25,6 +25,11 @@ from traversal import Traversal
 from editact import ActivityEditorApp
 
 paused = False
+input_manager = InputManager(SCREEN_WIDTH, SCREEN_HEIGHT)
+universe = Universe(SCREEN_WIDTH, SCREEN_HEIGHT)
+stats = universe.graph_from_file("Constellations.json")
+traversal = Traversal(universe.graph, stats)
+running = True
 
 def edit_activities(acts: list[tuple[str, float, float]]):
     """ Opens a menu for editing the given activities list """
@@ -35,6 +40,7 @@ def edit_activities(acts: list[tuple[str, float, float]]):
         app = ActivityEditorApp(root, acts)
         root.mainloop()
         paused = False
+        traversal.calculate()
     # Race conditions? I don't care, just finish
     thread = Thread(target = x, args = (acts, ))
     thread.start()
@@ -43,12 +49,7 @@ def main():
     """
     Main loop for the project.
     """
-    input_manager = InputManager(SCREEN_WIDTH, SCREEN_HEIGHT)
-    universe = Universe(SCREEN_WIDTH, SCREEN_HEIGHT)
-    stats = universe.graph_from_file("Constellations.json")
-    traversal = Traversal(universe.graph, stats)
-    running = True
-    global paused
+    global paused, input_manager, universe, stats, traversal, running
     while running:
         if paused:
             pygame.event.get()
