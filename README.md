@@ -2,7 +2,7 @@
 
 Explore different stars before your burro dies. Perform interesting research labors and eat grass like a true patriot.
 
-![title](preview.png)
+![title](banner.png)
 
 ## 🎮️ Running
 

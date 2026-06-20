@@ -4,20 +4,16 @@ Initial: 12 of 200 years -- 100% energy -- 300Kg grass
 -------------------------------
 Visited Beta178, arrived with 12 years.
 Spent on stay 6 years, ate 0Kg of grass.
-After staying: 18 of 200 years -- 100% energy -- 300Kg grass
+After staying: 12 of 200 years -- 100% energy -- 300Kg grass
 ----
-Visited Gama23, arrived with 63 years.
+Visited Gama23, arrived with 57 years.
 Spent on stay 6 years, ate 0Kg of grass.
-After staying: 69 of 200 years -- 100% energy -- 300Kg grass
+After staying: 57 of 200 years -- 100% energy -- 300Kg grass
 ----
-Visited Alpha53, arrived with 75 years.
+Visited Alpha53, arrived with 63 years.
 Spent on stay 8 years, ate 0Kg of grass.
-After staying: 83 of 200 years -- 100% energy -- 300Kg grass
+After staying: 83.0 of 200 years -- 0% energy -- 300Kg grass
 ----
-Visited Beta23, arrived with 100 years.
-Spent on stay 4 years, ate 0Kg of grass.
-After staying: 104 of 200 years -- 100% energy -- 300Kg grass
-----
-Died: while traveling
+Died: while investigating: Recolección de marcianos en chinchiná
 ===============================
 End of travel
